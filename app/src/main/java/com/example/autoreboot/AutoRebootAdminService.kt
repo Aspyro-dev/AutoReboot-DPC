@@ -22,6 +22,10 @@ class AutoRebootAdminService : DeviceAdminService() {
                     handler.postDelayed({ handlePossibleLock() }, 500L)
                 }
 
+                Intent.ACTION_SCREEN_ON -> {
+                    handleScreenOn()
+                }
+
                 Intent.ACTION_USER_PRESENT -> {
                     handleUnlock()
                 }
@@ -35,6 +39,7 @@ class AutoRebootAdminService : DeviceAdminService() {
 
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_USER_PRESENT)
         }
 
@@ -46,6 +51,18 @@ class AutoRebootAdminService : DeviceAdminService() {
         unregisterReceiver(lockReceiver)
         AutoRebootState.recordServiceDestroy(this)
         super.onDestroy()
+    }
+
+    private fun handleScreenOn() {
+        val keyguard = getSystemService(KeyguardManager::class.java)
+        val power = getSystemService(PowerManager::class.java)
+        AutoRebootState.recordScreenOn(
+            this,
+            keyguard.isDeviceLocked,
+            keyguard.isKeyguardLocked,
+            keyguard.isKeyguardSecure,
+            power.isInteractive
+        )
     }
 
     private fun handlePossibleLock() {
