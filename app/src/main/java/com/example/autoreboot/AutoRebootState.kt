@@ -32,10 +32,15 @@ object AutoRebootState {
     fun timerEnd(context: Context) =
         prefs(context).getLong(KEY_TIMER_END, 0L)
 
+    fun recordLock(context: Context) {
+        prefs(context).edit()
+            .putLong(KEY_LAST_LOCK, System.currentTimeMillis())
+            .apply()
+    }
+
     fun startTimer(context: Context, endTime: Long) {
         prefs(context).edit()
             .putLong(KEY_TIMER_END, endTime)
-            .putLong(KEY_LAST_LOCK, System.currentTimeMillis())
             .apply()
     }
 
