@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 
 class AutoRebootAdminService : DeviceAdminService() {
 
@@ -49,10 +50,11 @@ class AutoRebootAdminService : DeviceAdminService() {
 
     private fun handlePossibleLock() {
         val keyguard = getSystemService(KeyguardManager::class.java)
+        val power = getSystemService(PowerManager::class.java)
         val deviceLocked = keyguard.isDeviceLocked
         val keyguardLocked = keyguard.isKeyguardLocked
         val keyguardSecure = keyguard.isKeyguardSecure
-        val interactive = keyguard.isDeviceInteractive
+        val interactive = power.isInteractive
 
         AutoRebootState.recordLockCheck(
             this,
