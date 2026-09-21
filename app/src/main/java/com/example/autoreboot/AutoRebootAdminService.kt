@@ -51,8 +51,16 @@ class AutoRebootAdminService : DeviceAdminService() {
         val keyguard = getSystemService(KeyguardManager::class.java)
         val deviceLocked = keyguard.isDeviceLocked
         val keyguardLocked = keyguard.isKeyguardLocked
+        val keyguardSecure = keyguard.isKeyguardSecure
+        val interactive = keyguard.isDeviceInteractive
 
-        AutoRebootState.recordLockCheck(this, deviceLocked, keyguardLocked)
+        AutoRebootState.recordLockCheck(
+            this,
+            deviceLocked,
+            keyguardLocked,
+            keyguardSecure,
+            interactive
+        )
 
         if (!AutoRebootState.isEnabled(this)) return
         if (!deviceLocked) return
