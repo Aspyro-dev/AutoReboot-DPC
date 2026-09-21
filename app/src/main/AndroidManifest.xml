@@ -57,7 +57,11 @@
             android:name=".AutoRebootAdminService"
             android:exported="true"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
-            android:directBootAware="true" />
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_SERVICE" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".RebootAlarmReceiver"
