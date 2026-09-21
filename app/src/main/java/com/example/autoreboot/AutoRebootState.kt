@@ -12,6 +12,11 @@ object AutoRebootState {
     private const val KEY_LAST_LOCK = "last_lock"
     private const val KEY_LAST_ALARM = "last_alarm"
     private const val KEY_LAST_SCREEN_OFF = "last_screen_off"
+    private const val KEY_LAST_SCREEN_ON = "last_screen_on"
+    private const val KEY_LAST_SCREEN_ON_LOCKED = "last_screen_on_locked"
+    private const val KEY_LAST_SCREEN_ON_KEYGUARD = "last_screen_on_keyguard"
+    private const val KEY_LAST_SCREEN_ON_SECURE = "last_screen_on_secure"
+    private const val KEY_LAST_SCREEN_ON_INTERACTIVE = "last_screen_on_interactive"
     private const val KEY_LAST_LOCK_CHECK = "last_lock_check"
     private const val KEY_LAST_LOCK_CHECK_RESULT = "last_lock_check_result"
     private const val KEY_LAST_KEYGUARD_CHECK_RESULT = "last_keyguard_check_result"
@@ -90,6 +95,22 @@ object AutoRebootState {
             .apply()
     }
 
+    fun recordScreenOn(
+        context: Context,
+        locked: Boolean,
+        keyguardLocked: Boolean,
+        keyguardSecure: Boolean,
+        interactive: Boolean
+    ) {
+        prefs(context).edit()
+            .putLong(KEY_LAST_SCREEN_ON, System.currentTimeMillis())
+            .putString(KEY_LAST_SCREEN_ON_LOCKED, if (locked) "LOCKED" else "UNLOCKED")
+            .putString(KEY_LAST_SCREEN_ON_KEYGUARD, if (keyguardLocked) "LOCKED" else "UNLOCKED")
+            .putString(KEY_LAST_SCREEN_ON_SECURE, if (keyguardSecure) "SECURE" else "NOT SECURE")
+            .putString(KEY_LAST_SCREEN_ON_INTERACTIVE, if (interactive) "INTERACTIVE" else "NOT INTERACTIVE")
+            .apply()
+    }
+
     fun recordLockCheck(
         context: Context,
         locked: Boolean,
@@ -128,6 +149,15 @@ object AutoRebootState {
     fun lastLock(context: Context) = prefs(context).getLong(KEY_LAST_LOCK, 0L)
     fun lastAlarm(context: Context) = prefs(context).getLong(KEY_LAST_ALARM, 0L)
     fun lastScreenOff(context: Context) = prefs(context).getLong(KEY_LAST_SCREEN_OFF, 0L)
+    fun lastScreenOn(context: Context) = prefs(context).getLong(KEY_LAST_SCREEN_ON, 0L)
+    fun lastScreenOnLocked(context: Context) =
+        prefs(context).getString(KEY_LAST_SCREEN_ON_LOCKED, "never") ?: "never"
+    fun lastScreenOnKeyguard(context: Context) =
+        prefs(context).getString(KEY_LAST_SCREEN_ON_KEYGUARD, "never") ?: "never"
+    fun lastScreenOnSecure(context: Context) =
+        prefs(context).getString(KEY_LAST_SCREEN_ON_SECURE, "never") ?: "never"
+    fun lastScreenOnInteractive(context: Context) =
+        prefs(context).getString(KEY_LAST_SCREEN_ON_INTERACTIVE, "never") ?: "never"
     fun lastLockCheck(context: Context) = prefs(context).getLong(KEY_LAST_LOCK_CHECK, 0L)
     fun lastLockCheckResult(context: Context) =
         prefs(context).getString(KEY_LAST_LOCK_CHECK_RESULT, "never") ?: "never"
