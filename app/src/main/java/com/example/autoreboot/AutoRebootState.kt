@@ -15,6 +15,8 @@ object AutoRebootState {
     private const val KEY_LAST_LOCK_CHECK = "last_lock_check"
     private const val KEY_LAST_LOCK_CHECK_RESULT = "last_lock_check_result"
     private const val KEY_LAST_KEYGUARD_CHECK_RESULT = "last_keyguard_check_result"
+    private const val KEY_LAST_KEYGUARD_SECURE_RESULT = "last_keyguard_secure_result"
+    private const val KEY_LAST_INTERACTIVE_RESULT = "last_interactive_result"
     private const val KEY_LAST_TIMER_SCHEDULED = "last_timer_scheduled"
     private const val KEY_LAST_TIMER_CLEARED = "last_timer_cleared"
     private const val KEY_LAST_TIMER_CLEAR_REASON = "last_timer_clear_reason"
@@ -88,11 +90,19 @@ object AutoRebootState {
             .apply()
     }
 
-    fun recordLockCheck(context: Context, locked: Boolean, keyguardLocked: Boolean) {
+    fun recordLockCheck(
+        context: Context,
+        locked: Boolean,
+        keyguardLocked: Boolean,
+        keyguardSecure: Boolean,
+        interactive: Boolean
+    ) {
         prefs(context).edit()
             .putLong(KEY_LAST_LOCK_CHECK, System.currentTimeMillis())
             .putString(KEY_LAST_LOCK_CHECK_RESULT, if (locked) "LOCKED" else "UNLOCKED")
             .putString(KEY_LAST_KEYGUARD_CHECK_RESULT, if (keyguardLocked) "LOCKED" else "UNLOCKED")
+            .putString(KEY_LAST_KEYGUARD_SECURE_RESULT, if (keyguardSecure) "SECURE" else "NOT SECURE")
+            .putString(KEY_LAST_INTERACTIVE_RESULT, if (interactive) "INTERACTIVE" else "NOT INTERACTIVE")
             .apply()
     }
 
@@ -123,6 +133,10 @@ object AutoRebootState {
         prefs(context).getString(KEY_LAST_LOCK_CHECK_RESULT, "never") ?: "never"
     fun lastKeyguardCheckResult(context: Context) =
         prefs(context).getString(KEY_LAST_KEYGUARD_CHECK_RESULT, "never") ?: "never"
+    fun lastKeyguardSecureResult(context: Context) =
+        prefs(context).getString(KEY_LAST_KEYGUARD_SECURE_RESULT, "never") ?: "never"
+    fun lastInteractiveResult(context: Context) =
+        prefs(context).getString(KEY_LAST_INTERACTIVE_RESULT, "never") ?: "never"
     fun lastTimerScheduled(context: Context) =
         prefs(context).getLong(KEY_LAST_TIMER_SCHEDULED, 0L)
     fun lastTimerCleared(context: Context) =
