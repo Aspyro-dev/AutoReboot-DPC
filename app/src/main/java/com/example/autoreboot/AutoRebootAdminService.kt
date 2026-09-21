@@ -54,6 +54,8 @@ class AutoRebootAdminService : DeviceAdminService() {
         if (AutoRebootState.isWaitingForFirstUnlock(this)) return
         if (AutoRebootState.timerEnd(this) > 0L) return
 
+        AutoRebootState.recordLock(this)
+
         val endTime = System.currentTimeMillis() + AutoRebootState.durationMs(this)
         AutoRebootState.startTimer(this, endTime)
         RebootScheduler.schedule(this, endTime)
