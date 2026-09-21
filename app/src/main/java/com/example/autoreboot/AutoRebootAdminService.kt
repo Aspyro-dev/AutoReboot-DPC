@@ -18,9 +18,6 @@ class AutoRebootAdminService : DeviceAdminService() {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     AutoRebootState.recordScreenOff(context)
-
-                    // Give Keyguard a moment to settle before checking the
-                    // actual device-locked state.
                     handler.postDelayed({ handlePossibleLock() }, 500L)
                 }
 
@@ -52,12 +49,13 @@ class AutoRebootAdminService : DeviceAdminService() {
 
     private fun handlePossibleLock() {
         val keyguard = getSystemService(KeyguardManager::class.java)
-        val locked = keyguard.isDeviceLocked
+        val deviceLocked = keyguard.isDeviceLocked
+        val keyguardLocked = keyguard.isKeyguardLocked
 
-        AutoRebootState.recordLockCheck(this, locked)
+        AutoRebootState.recordLockCheck(this, deviceLocked, keyguardLocked)
 
         if (!AutoRebootState.isEnabled(this)) return
-        if (!locked) return
+        if (!deviceLocked) return
         if (AutoRebootState.isWaitingForFirstUnlock(this)) return
         if (AutoRebootState.timerEnd(this) > 0L) return
 
@@ -73,15 +71,12 @@ class AutoRebootAdminService : DeviceAdminService() {
         AutoRebootState.recordUnlock(this)
 
         if (AutoRebootState.isWaitingForFirstUnlock(this)) {
-            // After boot, the first successful unlock only arms the normal
-            // lock/unlock cycle. The timer starts on the next lock.
             AutoRebootState.setWaitingForFirstUnlock(this, false)
             AutoRebootState.clearTimer(this, "first_unlock_after_boot")
             RebootScheduler.cancel(this)
             return
         }
 
-        // Every successful unlock starts a fresh cycle.
         AutoRebootState.clearTimer(this, "user_present")
         RebootScheduler.cancel(this)
     }
