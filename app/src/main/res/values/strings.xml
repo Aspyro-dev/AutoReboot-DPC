@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AutoReboot</string>
+    <string name="device_admin_description">Allows AutoReboot to manage this device.</string>
+</resources>
