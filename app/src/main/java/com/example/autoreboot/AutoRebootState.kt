@@ -14,6 +14,7 @@ object AutoRebootState {
     private const val KEY_LAST_SCREEN_OFF = "last_screen_off"
     private const val KEY_LAST_LOCK_CHECK = "last_lock_check"
     private const val KEY_LAST_LOCK_CHECK_RESULT = "last_lock_check_result"
+    private const val KEY_LAST_KEYGUARD_CHECK_RESULT = "last_keyguard_check_result"
     private const val KEY_LAST_TIMER_SCHEDULED = "last_timer_scheduled"
     private const val KEY_LAST_TIMER_CLEARED = "last_timer_cleared"
     private const val KEY_LAST_TIMER_CLEAR_REASON = "last_timer_clear_reason"
@@ -87,10 +88,11 @@ object AutoRebootState {
             .apply()
     }
 
-    fun recordLockCheck(context: Context, locked: Boolean) {
+    fun recordLockCheck(context: Context, locked: Boolean, keyguardLocked: Boolean) {
         prefs(context).edit()
             .putLong(KEY_LAST_LOCK_CHECK, System.currentTimeMillis())
             .putString(KEY_LAST_LOCK_CHECK_RESULT, if (locked) "LOCKED" else "UNLOCKED")
+            .putString(KEY_LAST_KEYGUARD_CHECK_RESULT, if (keyguardLocked) "LOCKED" else "UNLOCKED")
             .apply()
     }
 
@@ -119,6 +121,8 @@ object AutoRebootState {
     fun lastLockCheck(context: Context) = prefs(context).getLong(KEY_LAST_LOCK_CHECK, 0L)
     fun lastLockCheckResult(context: Context) =
         prefs(context).getString(KEY_LAST_LOCK_CHECK_RESULT, "never") ?: "never"
+    fun lastKeyguardCheckResult(context: Context) =
+        prefs(context).getString(KEY_LAST_KEYGUARD_CHECK_RESULT, "never") ?: "never"
     fun lastTimerScheduled(context: Context) =
         prefs(context).getLong(KEY_LAST_TIMER_SCHEDULED, 0L)
     fun lastTimerCleared(context: Context) =
