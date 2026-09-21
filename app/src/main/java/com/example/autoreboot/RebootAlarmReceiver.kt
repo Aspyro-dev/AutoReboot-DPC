@@ -12,6 +12,6 @@ class RebootAlarmReceiver : BroadcastReceiver() {
 
         // Stage 1 intentionally does NOT reboot.
         // We only mark the timer as expired so the behavior can be tested safely.
-        AutoRebootState.clearTimer(context)
+        AutoRebootState.clearTimer(context, "alarm_fired")
     }
 }
