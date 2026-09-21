@@ -88,6 +88,7 @@ fun AutoRebootScreen() {
             "Last lock check: ${formatTimestamp(AutoRebootState.lastLockCheck(context))} (${AutoRebootState.lastLockCheckResult(context)})",
             Modifier.padding(top = 8.dp)
         )
+        Text("Last Keyguard check: ${AutoRebootState.lastKeyguardCheckResult(context)}", Modifier.padding(top = 8.dp))
         Text("Last timer scheduled: ${formatTimestamp(AutoRebootState.lastTimerScheduled(context))}", Modifier.padding(top = 8.dp))
         Text(
             "Last timer cleared: ${formatTimestamp(AutoRebootState.lastTimerCleared(context))} (${AutoRebootState.lastTimerClearReason(context)})",
