@@ -84,6 +84,11 @@ fun AutoRebootScreen() {
         Text("Last timer alarm: ${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
 
         Text("Last SCREEN_OFF: ${formatTimestamp(AutoRebootState.lastScreenOff(context))}", Modifier.padding(top = 8.dp))
+        Text("Last SCREEN_ON: ${formatTimestamp(AutoRebootState.lastScreenOn(context))}", Modifier.padding(top = 8.dp))
+        Text(
+            "SCREEN_ON state: device=${AutoRebootState.lastScreenOnLocked(context)}, keyguard=${AutoRebootState.lastScreenOnKeyguard(context)}, secure=${AutoRebootState.lastScreenOnSecure(context)}, interactive=${AutoRebootState.lastScreenOnInteractive(context)}",
+            Modifier.padding(top = 8.dp)
+        )
         Text(
             "Last lock check: ${formatTimestamp(AutoRebootState.lastLockCheck(context))} (${AutoRebootState.lastLockCheckResult(context)})",
             Modifier.padding(top = 8.dp)
