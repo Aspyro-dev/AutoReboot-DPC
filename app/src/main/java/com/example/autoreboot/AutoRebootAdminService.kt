@@ -17,6 +17,8 @@ class AutoRebootAdminService : DeviceAdminService() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
+                    AutoRebootState.recordScreenOff(context)
+
                     // Give Keyguard a moment to settle before checking the
                     // actual device-locked state.
                     handler.postDelayed({ handlePossibleLock() }, 500L)
@@ -31,6 +33,7 @@ class AutoRebootAdminService : DeviceAdminService() {
 
     override fun onCreate() {
         super.onCreate()
+        AutoRebootState.recordServiceCreate(this)
 
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
@@ -43,14 +46,18 @@ class AutoRebootAdminService : DeviceAdminService() {
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
         unregisterReceiver(lockReceiver)
+        AutoRebootState.recordServiceDestroy(this)
         super.onDestroy()
     }
 
     private fun handlePossibleLock() {
         val keyguard = getSystemService(KeyguardManager::class.java)
+        val locked = keyguard.isDeviceLocked
+
+        AutoRebootState.recordLockCheck(this, locked)
 
         if (!AutoRebootState.isEnabled(this)) return
-        if (!keyguard.isDeviceLocked) return
+        if (!locked) return
         if (AutoRebootState.isWaitingForFirstUnlock(this)) return
         if (AutoRebootState.timerEnd(this) > 0L) return
 
@@ -58,6 +65,7 @@ class AutoRebootAdminService : DeviceAdminService() {
 
         val endTime = System.currentTimeMillis() + AutoRebootState.durationMs(this)
         AutoRebootState.startTimer(this, endTime)
+        AutoRebootState.recordTimerScheduled(this)
         RebootScheduler.schedule(this, endTime)
     }
 
@@ -68,13 +76,13 @@ class AutoRebootAdminService : DeviceAdminService() {
             // After boot, the first successful unlock only arms the normal
             // lock/unlock cycle. The timer starts on the next lock.
             AutoRebootState.setWaitingForFirstUnlock(this, false)
-            AutoRebootState.clearTimer(this)
+            AutoRebootState.clearTimer(this, "first_unlock_after_boot")
             RebootScheduler.cancel(this)
             return
         }
 
         // Every successful unlock starts a fresh cycle.
-        AutoRebootState.clearTimer(this)
+        AutoRebootState.clearTimer(this, "user_present")
         RebootScheduler.cancel(this)
     }
 }
