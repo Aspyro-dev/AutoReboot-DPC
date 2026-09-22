@@ -40,7 +40,7 @@ object AutoRebootState {
         prefs(context).edit().putLong(KEY_TIMER_END, endTime).apply()
     }
 
-    fun clearTimer(context: Context, reason: String = "unknown") {
+    fun clearTimer(context: Context) {
         prefs(context).edit().remove(KEY_TIMER_END).apply()
     }
 

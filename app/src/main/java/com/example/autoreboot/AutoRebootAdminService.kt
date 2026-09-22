@@ -60,12 +60,12 @@ class AutoRebootAdminService : DeviceAdminService() {
 
         if (AutoRebootState.isWaitingForFirstUnlock(this)) {
             AutoRebootState.setWaitingForFirstUnlock(this, false)
-            AutoRebootState.clearTimer(this, "first_unlock_after_boot")
+            AutoRebootState.clearTimer()
             RebootScheduler.cancel(this)
             return
         }
 
-        AutoRebootState.clearTimer(this, "user_present")
+        AutoRebootState.clearTimer()
         RebootScheduler.cancel(this)
     }
 }

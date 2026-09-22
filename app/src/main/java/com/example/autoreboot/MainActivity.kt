@@ -61,60 +61,41 @@ fun AutoRebootScreen() {
         val hours = totalSeconds / 3600L
         val minutes = (totalSeconds % 3600L) / 60L
         val seconds = totalSeconds % 60L
-        return "%02d:%02d:%02d".format(hours, minutes, seconds)
+        return if (hours > 0L) "%dh %02dm %02ds".format(hours, minutes, seconds)
+        else if (minutes > 0L) "%dm %02ds".format(minutes, seconds)
+        else "%ds".format(seconds)
     }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+    fun formatConfiguredDuration(ms: Long): String {
+        val minutes = ms / 60_000L
+        return when {
+            minutes < 60L -> "$minutes minute" + if (minutes == 1L) "" else "s"
+            minutes % 60L == 0L -> { val hours = minutes / 60L; "$hours hour" + if (hours == 1L) "" else "s" }
+            else -> { val hours = minutes / 60L; val remainingMinutes = minutes % 60L; "$hours hour" + if (hours == 1L) "" else "s" + " $remainingMinutes minute" + if (remainingMinutes == 1L) "" else "s" }
+        }
+    }
+
+    val configuredDuration = AutoRebootState.durationMs(context)
+    val options = listOf(1L*60L*1000L,5L*60L*1000L,10L*60L*1000L,30L*60L*1000L,1L*60L*60L*1000L,2L*60L*60L*1000L,5L*60L*60L*1000L,10L*60L*60L*1000L,12L*60L*60L*1000L,24L*60L*60L*1000L)
+
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text("AutoReboot", style = MaterialTheme.typography.headlineMedium)
         Text(if (isDeviceOwner) "Device Owner: YES" else "Device Owner: NO", Modifier.padding(top = 16.dp))
         Text(if (isLocked) "Device state: LOCKED" else "Device state: UNLOCKED", Modifier.padding(top = 8.dp))
+        Text("Lock timer", Modifier.padding(top = 16.dp))
+        Button(onClick = { val current = AutoRebootState.durationMs(context); val next = options[(options.indexOf(current) + 1).mod(options.size)]; AutoRebootState.setDurationMs(context, next); refresh = !refresh }, Modifier.padding(top = 4.dp)) { Text(formatConfiguredDuration(configuredDuration)) }
         Text(if (timerActive) "Timer: ${formatDuration(remaining)} remaining" else "Timer: not active", Modifier.padding(top = 8.dp))
         Text("Enabled: ${AutoRebootState.isEnabled(context)}", Modifier.padding(top = 8.dp))
         Text("Waiting for first unlock: ${AutoRebootState.isWaitingForFirstUnlock(context)}", Modifier.padding(top = 8.dp))
-
         Text("Last unlock: ${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
         Text("Last lock detected: ${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
         Text("Last timer alarm: ${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
-
-        Button(
-            onClick = {
-                val enabled = !AutoRebootState.isEnabled(context)
-                AutoRebootState.setEnabled(context, enabled)
-                if (!enabled) {
-                    AutoRebootState.clearTimer(context, "disabled")
-                    RebootScheduler.cancel(context)
-                }
-                refresh = !refresh
-            },
-            Modifier.padding(top = 16.dp)
-        ) {
-            Text(if (AutoRebootState.isEnabled(context)) "Disable" else "Enable")
-        }
-
-        Button(
-            onClick = {
-                AutoRebootState.clearTimer(context, "manual_cancel")
-                RebootScheduler.cancel(context)
-                refresh = !refresh
-            },
-            Modifier.padding(top = 8.dp)
-        ) {
-            Text("Cancel current timer")
-        }
+        Button(onClick = { val enabled = !AutoRebootState.isEnabled(context); AutoRebootState.setEnabled(context, enabled); if (!enabled) { AutoRebootState.clearTimer(); RebootScheduler.cancel(context) }; refresh = !refresh }, Modifier.padding(top = 16.dp)) { Text(if (AutoRebootState.isEnabled(context)) "Disable" else "Enable") }
+        Button(onClick = { AutoRebootState.clearTimer(); RebootScheduler.cancel(context); refresh = !refresh }, Modifier.padding(top = 8.dp)) { Text("Cancel current timer") }
     }
 }
 
 private fun formatTimestamp(timestamp: Long): String {
     if (timestamp == 0L) return "never"
-    return java.text.SimpleDateFormat(
-        "yyyy-MM-dd HH:mm:ss.SSS",
-        java.util.Locale.getDefault()
-    ).format(java.util.Date(timestamp))
+    return java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.getDefault()).format(java.util.Date(timestamp))
 }
