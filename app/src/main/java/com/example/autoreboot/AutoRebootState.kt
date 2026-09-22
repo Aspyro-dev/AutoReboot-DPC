@@ -8,6 +8,7 @@ object AutoRebootState {
     private const val KEY_DURATION_MS = "duration_ms"
     private const val KEY_TIMER_END = "timer_end"
     private const val KEY_TIMER_START = "timer_start"
+    private const val KEY_TIMER_TOKEN = "timer_token"
     private const val KEY_LAST_REBOOT_ATTEMPT = "last_reboot_attempt"
     private const val KEY_LAST_REBOOT_RESULT = "last_reboot_result"
     private const val KEY_WAITING_FIRST_UNLOCK = "waiting_first_unlock"
@@ -42,6 +43,9 @@ object AutoRebootState {
     fun timerStart(context: Context) =
         prefs(context).getLong(KEY_TIMER_START, 0L)
 
+    fun timerToken(context: Context) =
+        prefs(context).getLong(KEY_TIMER_TOKEN, 0L)
+
     fun recordLock(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_LOCK, System.currentTimeMillis()).apply()
     }
@@ -50,6 +54,7 @@ object AutoRebootState {
         prefs(context).edit()
             .putLong(KEY_TIMER_START, System.currentTimeMillis())
             .putLong(KEY_TIMER_END, endTime)
+            .putLong(KEY_TIMER_TOKEN, endTime)
             .apply()
     }
 
@@ -73,6 +78,7 @@ object AutoRebootState {
         prefs(context).edit()
             .remove(KEY_TIMER_END)
             .remove(KEY_TIMER_START)
+            .remove(KEY_TIMER_TOKEN)
             .apply()
     }
 
