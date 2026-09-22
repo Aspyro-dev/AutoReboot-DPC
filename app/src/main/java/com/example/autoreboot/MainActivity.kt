@@ -75,13 +75,13 @@ fun AutoRebootScreen() {
         Text("AutoReboot", style = MaterialTheme.typography.headlineMedium)
         Text(if (isDeviceOwner) "Device Owner: YES" else "Device Owner: NO", Modifier.padding(top = 16.dp))
         Text(if (isLocked) "Device state: LOCKED" else "Device state: UNLOCKED", Modifier.padding(top = 8.dp))
-        Text(if (timerActive) "Timer: \${formatDuration(remaining)} remaining" else "Timer: not active", Modifier.padding(top = 8.dp))
-        Text("Enabled: \${AutoRebootState.isEnabled(context)}", Modifier.padding(top = 8.dp))
-        Text("Waiting for first unlock: \${AutoRebootState.isWaitingForFirstUnlock(context)}", Modifier.padding(top = 8.dp))
+        Text(if (timerActive) "Timer: ${formatDuration(remaining)} remaining" else "Timer: not active", Modifier.padding(top = 8.dp))
+        Text("Enabled: ${AutoRebootState.isEnabled(context)}", Modifier.padding(top = 8.dp))
+        Text("Waiting for first unlock: ${AutoRebootState.isWaitingForFirstUnlock(context)}", Modifier.padding(top = 8.dp))
 
-        Text("Last unlock: \${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
-        Text("Last lock detected: \${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
-        Text("Last timer alarm: \${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
+        Text("Last unlock: ${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
+        Text("Last lock detected: ${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
+        Text("Last timer alarm: ${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
 
         Button(
             onClick = {
