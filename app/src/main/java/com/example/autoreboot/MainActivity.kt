@@ -18,19 +18,15 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.autoreboot.ui.theme.AutoRebootTheme
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,19 +42,10 @@ fun AutoRebootScreen() {
     val keyguard = context.getSystemService(KeyguardManager::class.java)
     val isDeviceOwner = dpm.isDeviceOwnerApp(context.packageName)
     val isLocked = keyguard.isDeviceLocked
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var timerMenuExpanded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(1.seconds)
-        }
-    }
-
     val timerEnd = AutoRebootState.timerEnd(context)
-    val remaining = if (timerEnd > now) timerEnd - now else 0L
-    val timerActive = timerEnd > now
+    val timerActive = timerEnd > System.currentTimeMillis()
 
     fun formatDuration(ms: Long): String {
         val totalSeconds = ms / 1000L
@@ -132,7 +119,7 @@ fun AutoRebootScreen() {
         }
 
         Text(
-            if (timerActive) "Timer: ${formatDuration(remaining)} remaining" else "Timer: not active",
+            if (timerActive) "Timer: active" else "Timer: not active",
             Modifier.padding(top = 8.dp)
         )
         Text("Enabled: ${AutoRebootState.isEnabled(context)}", Modifier.padding(top = 8.dp))
@@ -154,8 +141,8 @@ fun AutoRebootScreen() {
                 val enabled = !AutoRebootState.isEnabled(context)
                 AutoRebootState.setEnabled(context, enabled)
                 if (!enabled) {
-                    AutoRebootState.clearTimer(context)
                     RebootScheduler.cancel(context)
+                    AutoRebootState.clearTimer(context)
                 }
             },
             Modifier.padding(top = 16.dp)
