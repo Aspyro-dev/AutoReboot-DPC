@@ -23,22 +23,35 @@ object RebootScheduler {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val operation = pendingIntent(context)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            // Exact-alarm access may be unavailable on newer Android versions.
-            // Keep the timer functional with an idle-allowed inexact alarm.
-            alarmManager.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                endTime,
-                operation
-            )
-            return
-        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    endTime,
+                    operation
+                )
+                AutoRebootState.recordTimerScheduled(context, endTime, "inexact")
+                return
+            }
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            endTime,
-            operation
-        )
+            // Use an alarm-clock alarm during this testing stage.
+            // Android treats it as an exact, highly visible alarm and does not adjust
+            // its delivery time. This gives us a strong test of alarm delivery while
+            // the phone is asleep.
+            val alarmClockInfo = AlarmManager.AlarmClockInfo(endTime, operation)
+            alarmManager.setAlarmClock(alarmClockInfo, operation)
+            AutoRebootState.recordTimerScheduled(context, endTime, "alarm_clock_exact")
+        } catch (e: SecurityException) {
+            AutoRebootState.recordScheduleError(
+                context,
+                "SecurityException: " + (e.message ?: "unknown")
+            )
+        } catch (e: RuntimeException) {
+            AutoRebootState.recordScheduleError(
+                context,
+                e.javaClass.simpleName + ": " + (e.message ?: "unknown")
+            )
+        }
     }
 
     fun cancel(context: Context) {
