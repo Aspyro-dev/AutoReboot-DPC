@@ -10,6 +10,8 @@ class BootReceiver : BroadcastReceiver() {
             intent.action != Intent.ACTION_BOOT_COMPLETED
         ) return
 
+        AutoRebootState.recordDiagnostic(context, "BootReceiver: " + intent.action)
+
         // Only initialize the post-boot state once. BOOT_COMPLETED can arrive
         // after the user has already unlocked on some devices.
         if (!AutoRebootState.isWaitingForFirstUnlock(context)) {
