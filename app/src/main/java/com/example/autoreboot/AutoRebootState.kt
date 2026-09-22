@@ -11,23 +11,6 @@ object AutoRebootState {
     private const val KEY_LAST_UNLOCK = "last_unlock"
     private const val KEY_LAST_LOCK = "last_lock"
     private const val KEY_LAST_ALARM = "last_alarm"
-    private const val KEY_LAST_SCREEN_OFF = "last_screen_off"
-    private const val KEY_LAST_SCREEN_ON = "last_screen_on"
-    private const val KEY_LAST_SCREEN_ON_LOCKED = "last_screen_on_locked"
-    private const val KEY_LAST_SCREEN_ON_KEYGUARD = "last_screen_on_keyguard"
-    private const val KEY_LAST_SCREEN_ON_SECURE = "last_screen_on_secure"
-    private const val KEY_LAST_SCREEN_ON_INTERACTIVE = "last_screen_on_interactive"
-    private const val KEY_LAST_LOCK_CHECK = "last_lock_check"
-    private const val KEY_LAST_LOCK_CHECK_RESULT = "last_lock_check_result"
-    private const val KEY_LAST_KEYGUARD_CHECK_RESULT = "last_keyguard_check_result"
-    private const val KEY_LAST_KEYGUARD_SECURE_RESULT = "last_keyguard_secure_result"
-    private const val KEY_LAST_INTERACTIVE_RESULT = "last_interactive_result"
-    private const val KEY_LAST_TIMER_SCHEDULED = "last_timer_scheduled"
-    private const val KEY_LAST_TIMER_CLEARED = "last_timer_cleared"
-    private const val KEY_LAST_TIMER_CLEAR_REASON = "last_timer_clear_reason"
-    private const val KEY_LAST_USER_PRESENT = "last_user_present"
-    private const val KEY_LAST_SERVICE_CREATE = "last_service_create"
-    private const val KEY_LAST_SERVICE_DESTROY = "last_service_destroy"
 
     private fun prefs(context: Context) =
         context.createDeviceProtectedStorageContext()
@@ -50,23 +33,15 @@ object AutoRebootState {
         prefs(context).getLong(KEY_TIMER_END, 0L)
 
     fun recordLock(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_LOCK, System.currentTimeMillis())
-            .apply()
+        prefs(context).edit().putLong(KEY_LAST_LOCK, System.currentTimeMillis()).apply()
     }
 
     fun startTimer(context: Context, endTime: Long) {
-        prefs(context).edit()
-            .putLong(KEY_TIMER_END, endTime)
-            .apply()
+        prefs(context).edit().putLong(KEY_TIMER_END, endTime).apply()
     }
 
     fun clearTimer(context: Context, reason: String = "unknown") {
-        prefs(context).edit()
-            .remove(KEY_TIMER_END)
-            .putLong(KEY_LAST_TIMER_CLEARED, System.currentTimeMillis())
-            .putString(KEY_LAST_TIMER_CLEAR_REASON, reason)
-            .apply()
+        prefs(context).edit().remove(KEY_TIMER_END).apply()
     }
 
     fun setWaitingForFirstUnlock(context: Context, waiting: Boolean) {
@@ -77,106 +52,14 @@ object AutoRebootState {
         prefs(context).getBoolean(KEY_WAITING_FIRST_UNLOCK, false)
 
     fun recordUnlock(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_UNLOCK, System.currentTimeMillis())
-            .putLong(KEY_LAST_USER_PRESENT, System.currentTimeMillis())
-            .apply()
+        prefs(context).edit().putLong(KEY_LAST_UNLOCK, System.currentTimeMillis()).apply()
     }
 
     fun recordAlarm(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_ALARM, System.currentTimeMillis())
-            .apply()
-    }
-
-    fun recordScreenOff(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_SCREEN_OFF, System.currentTimeMillis())
-            .apply()
-    }
-
-    fun recordScreenOn(
-        context: Context,
-        locked: Boolean,
-        keyguardLocked: Boolean,
-        keyguardSecure: Boolean,
-        interactive: Boolean
-    ) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_SCREEN_ON, System.currentTimeMillis())
-            .putString(KEY_LAST_SCREEN_ON_LOCKED, if (locked) "LOCKED" else "UNLOCKED")
-            .putString(KEY_LAST_SCREEN_ON_KEYGUARD, if (keyguardLocked) "LOCKED" else "UNLOCKED")
-            .putString(KEY_LAST_SCREEN_ON_SECURE, if (keyguardSecure) "SECURE" else "NOT SECURE")
-            .putString(KEY_LAST_SCREEN_ON_INTERACTIVE, if (interactive) "INTERACTIVE" else "NOT INTERACTIVE")
-            .apply()
-    }
-
-    fun recordLockCheck(
-        context: Context,
-        locked: Boolean,
-        keyguardLocked: Boolean,
-        keyguardSecure: Boolean,
-        interactive: Boolean
-    ) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_LOCK_CHECK, System.currentTimeMillis())
-            .putString(KEY_LAST_LOCK_CHECK_RESULT, if (locked) "LOCKED" else "UNLOCKED")
-            .putString(KEY_LAST_KEYGUARD_CHECK_RESULT, if (keyguardLocked) "LOCKED" else "UNLOCKED")
-            .putString(KEY_LAST_KEYGUARD_SECURE_RESULT, if (keyguardSecure) "SECURE" else "NOT SECURE")
-            .putString(KEY_LAST_INTERACTIVE_RESULT, if (interactive) "INTERACTIVE" else "NOT INTERACTIVE")
-            .apply()
-    }
-
-    fun recordTimerScheduled(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_TIMER_SCHEDULED, System.currentTimeMillis())
-            .apply()
-    }
-
-    fun recordServiceCreate(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_SERVICE_CREATE, System.currentTimeMillis())
-            .apply()
-    }
-
-    fun recordServiceDestroy(context: Context) {
-        prefs(context).edit()
-            .putLong(KEY_LAST_SERVICE_DESTROY, System.currentTimeMillis())
-            .apply()
+        prefs(context).edit().putLong(KEY_LAST_ALARM, System.currentTimeMillis()).apply()
     }
 
     fun lastUnlock(context: Context) = prefs(context).getLong(KEY_LAST_UNLOCK, 0L)
     fun lastLock(context: Context) = prefs(context).getLong(KEY_LAST_LOCK, 0L)
     fun lastAlarm(context: Context) = prefs(context).getLong(KEY_LAST_ALARM, 0L)
-    fun lastScreenOff(context: Context) = prefs(context).getLong(KEY_LAST_SCREEN_OFF, 0L)
-    fun lastScreenOn(context: Context) = prefs(context).getLong(KEY_LAST_SCREEN_ON, 0L)
-    fun lastScreenOnLocked(context: Context) =
-        prefs(context).getString(KEY_LAST_SCREEN_ON_LOCKED, "never") ?: "never"
-    fun lastScreenOnKeyguard(context: Context) =
-        prefs(context).getString(KEY_LAST_SCREEN_ON_KEYGUARD, "never") ?: "never"
-    fun lastScreenOnSecure(context: Context) =
-        prefs(context).getString(KEY_LAST_SCREEN_ON_SECURE, "never") ?: "never"
-    fun lastScreenOnInteractive(context: Context) =
-        prefs(context).getString(KEY_LAST_SCREEN_ON_INTERACTIVE, "never") ?: "never"
-    fun lastLockCheck(context: Context) = prefs(context).getLong(KEY_LAST_LOCK_CHECK, 0L)
-    fun lastLockCheckResult(context: Context) =
-        prefs(context).getString(KEY_LAST_LOCK_CHECK_RESULT, "never") ?: "never"
-    fun lastKeyguardCheckResult(context: Context) =
-        prefs(context).getString(KEY_LAST_KEYGUARD_CHECK_RESULT, "never") ?: "never"
-    fun lastKeyguardSecureResult(context: Context) =
-        prefs(context).getString(KEY_LAST_KEYGUARD_SECURE_RESULT, "never") ?: "never"
-    fun lastInteractiveResult(context: Context) =
-        prefs(context).getString(KEY_LAST_INTERACTIVE_RESULT, "never") ?: "never"
-    fun lastTimerScheduled(context: Context) =
-        prefs(context).getLong(KEY_LAST_TIMER_SCHEDULED, 0L)
-    fun lastTimerCleared(context: Context) =
-        prefs(context).getLong(KEY_LAST_TIMER_CLEARED, 0L)
-    fun lastTimerClearReason(context: Context) =
-        prefs(context).getString(KEY_LAST_TIMER_CLEAR_REASON, "never") ?: "never"
-    fun lastUserPresent(context: Context) =
-        prefs(context).getLong(KEY_LAST_USER_PRESENT, 0L)
-    fun lastServiceCreate(context: Context) =
-        prefs(context).getLong(KEY_LAST_SERVICE_CREATE, 0L)
-    fun lastServiceDestroy(context: Context) =
-        prefs(context).getLong(KEY_LAST_SERVICE_DESTROY, 0L)
 }
