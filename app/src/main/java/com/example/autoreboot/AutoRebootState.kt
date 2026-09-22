@@ -7,6 +7,9 @@ object AutoRebootState {
     private const val KEY_ENABLED = "enabled"
     private const val KEY_DURATION_MS = "duration_ms"
     private const val KEY_TIMER_END = "timer_end"
+    private const val KEY_TIMER_START = "timer_start"
+    private const val KEY_LAST_REBOOT_ATTEMPT = "last_reboot_attempt"
+    private const val KEY_LAST_REBOOT_RESULT = "last_reboot_result"
     private const val KEY_WAITING_FIRST_UNLOCK = "waiting_first_unlock"
     private const val KEY_LAST_UNLOCK = "last_unlock"
     private const val KEY_LAST_LOCK = "last_lock"
@@ -36,12 +39,18 @@ object AutoRebootState {
     fun timerEnd(context: Context) =
         prefs(context).getLong(KEY_TIMER_END, 0L)
 
+    fun timerStart(context: Context) =
+        prefs(context).getLong(KEY_TIMER_START, 0L)
+
     fun recordLock(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_LOCK, System.currentTimeMillis()).apply()
     }
 
     fun startTimer(context: Context, endTime: Long) {
-        prefs(context).edit().putLong(KEY_TIMER_END, endTime).apply()
+        prefs(context).edit()
+            .putLong(KEY_TIMER_START, System.currentTimeMillis())
+            .putLong(KEY_TIMER_END, endTime)
+            .apply()
     }
 
     fun recordTimerScheduled(context: Context, endTime: Long, mode: String) {
@@ -61,7 +70,10 @@ object AutoRebootState {
     }
 
     fun clearTimer(context: Context) {
-        prefs(context).edit().remove(KEY_TIMER_END).apply()
+        prefs(context).edit()
+            .remove(KEY_TIMER_END)
+            .remove(KEY_TIMER_START)
+            .apply()
     }
 
     fun setWaitingForFirstUnlock(context: Context, waiting: Boolean) {
@@ -79,9 +91,18 @@ object AutoRebootState {
         prefs(context).edit().putLong(KEY_LAST_ALARM, System.currentTimeMillis()).apply()
     }
 
+    fun recordRebootAttempt(context: Context, result: String) {
+        prefs(context).edit()
+            .putLong(KEY_LAST_REBOOT_ATTEMPT, System.currentTimeMillis())
+            .putString(KEY_LAST_REBOOT_RESULT, result)
+            .apply()
+    }
+
     fun lastUnlock(context: Context) = prefs(context).getLong(KEY_LAST_UNLOCK, 0L)
     fun lastLock(context: Context) = prefs(context).getLong(KEY_LAST_LOCK, 0L)
     fun lastAlarm(context: Context) = prefs(context).getLong(KEY_LAST_ALARM, 0L)
+    fun lastRebootAttempt(context: Context) = prefs(context).getLong(KEY_LAST_REBOOT_ATTEMPT, 0L)
+    fun lastRebootResult(context: Context) = prefs(context).getString(KEY_LAST_REBOOT_RESULT, "") ?: ""
     fun lastScheduled(context: Context) = prefs(context).getLong(KEY_LAST_SCHEDULED, 0L)
     fun lastScheduledEnd(context: Context) = prefs(context).getLong(KEY_LAST_SCHEDULED_END, 0L)
     fun lastScheduleMode(context: Context) = prefs(context).getString(KEY_LAST_SCHEDULE_MODE, "never") ?: "never"
