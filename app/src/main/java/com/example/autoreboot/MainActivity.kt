@@ -140,8 +140,6 @@ fun AutoRebootScreen() {
         Text("Last unlock: ${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
         Text("Last lock detected: ${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
         Text("Last timer alarm: ${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
-        Text("Last reboot attempt: ${formatTimestamp(AutoRebootState.lastRebootAttempt(context))}", Modifier.padding(top = 8.dp))
-        Text("Reboot result: ${AutoRebootState.lastRebootResult(context).ifEmpty { "never" }}", Modifier.padding(top = 8.dp))
         Text("Last timer scheduled: ${formatTimestamp(AutoRebootState.lastScheduled(context))}", Modifier.padding(top = 8.dp))
         Text("Scheduled end: ${formatTimestamp(AutoRebootState.lastScheduledEnd(context))}", Modifier.padding(top = 8.dp))
         Text("Schedule mode: ${AutoRebootState.lastScheduleMode(context)}", Modifier.padding(top = 8.dp))
