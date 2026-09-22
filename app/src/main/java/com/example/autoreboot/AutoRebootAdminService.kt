@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
 
 class AutoRebootAdminService : DeviceAdminService() {
 
@@ -17,29 +16,17 @@ class AutoRebootAdminService : DeviceAdminService() {
     private val lockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
-                Intent.ACTION_SCREEN_OFF -> {
-                    AutoRebootState.recordScreenOff(context)
-                    handler.postDelayed({ handlePossibleLock() }, 500L)
-                }
-
-                Intent.ACTION_SCREEN_ON -> {
-                    handleScreenOn()
-                }
-
-                Intent.ACTION_USER_PRESENT -> {
-                    handleUnlock()
-                }
+                Intent.ACTION_SCREEN_OFF -> handler.postDelayed({ handlePossibleLock() }, 500L)
+                Intent.ACTION_USER_PRESENT -> handleUnlock()
             }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        AutoRebootState.recordServiceCreate(this)
 
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_USER_PRESENT)
         }
 
@@ -49,37 +36,12 @@ class AutoRebootAdminService : DeviceAdminService() {
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
         unregisterReceiver(lockReceiver)
-        AutoRebootState.recordServiceDestroy(this)
         super.onDestroy()
-    }
-
-    private fun handleScreenOn() {
-        val keyguard = getSystemService(KeyguardManager::class.java)
-        val power = getSystemService(PowerManager::class.java)
-        AutoRebootState.recordScreenOn(
-            this,
-            keyguard.isDeviceLocked,
-            keyguard.isKeyguardLocked,
-            keyguard.isKeyguardSecure,
-            power.isInteractive
-        )
     }
 
     private fun handlePossibleLock() {
         val keyguard = getSystemService(KeyguardManager::class.java)
-        val power = getSystemService(PowerManager::class.java)
         val deviceLocked = keyguard.isDeviceLocked
-        val keyguardLocked = keyguard.isKeyguardLocked
-        val keyguardSecure = keyguard.isKeyguardSecure
-        val interactive = power.isInteractive
-
-        AutoRebootState.recordLockCheck(
-            this,
-            deviceLocked,
-            keyguardLocked,
-            keyguardSecure,
-            interactive
-        )
 
         if (!AutoRebootState.isEnabled(this)) return
         if (!deviceLocked) return
@@ -90,7 +52,6 @@ class AutoRebootAdminService : DeviceAdminService() {
 
         val endTime = System.currentTimeMillis() + AutoRebootState.durationMs(this)
         AutoRebootState.startTimer(this, endTime)
-        AutoRebootState.recordTimerScheduled(this)
         RebootScheduler.schedule(this, endTime)
     }
 
