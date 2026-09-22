@@ -1,7 +1,7 @@
 package com.example.autoreboot
 
-import android.app.admin.DevicePolicyManager
 import android.app.KeyguardManager
+import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -16,6 +16,7 @@ class RebootAlarmReceiver : BroadcastReceiver() {
         val expectedEnd = intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L)
         val currentEnd = AutoRebootState.timerEnd(context)
         val timerStart = AutoRebootState.timerStart(context)
+        val currentToken = AutoRebootState.timerToken(context)
         val now = System.currentTimeMillis()
 
         val dpm = context.getSystemService(DevicePolicyManager::class.java)
@@ -37,12 +38,12 @@ class RebootAlarmReceiver : BroadcastReceiver() {
             return
         }
 
-        if (currentEnd == 0L || timerStart == 0L) {
+        if (currentEnd == 0L || timerStart == 0L || currentToken == 0L) {
             AutoRebootState.recordRebootAttempt(context, "skipped: no active timer")
             return
         }
 
-        if (expectedEnd != currentEnd) {
+        if (expectedEnd != currentEnd || expectedEnd != currentToken) {
             AutoRebootState.recordRebootAttempt(context, "skipped: stale alarm")
             return
         }
@@ -53,7 +54,10 @@ class RebootAlarmReceiver : BroadcastReceiver() {
         }
 
         if (AutoRebootState.lastUnlock(context) >= timerStart) {
-            AutoRebootState.recordRebootAttempt(context, "skipped: user unlocked after timer start")
+            AutoRebootState.recordRebootAttempt(
+                context,
+                "skipped: user unlocked after timer start"
+            )
             AutoRebootState.clearTimer(context)
             return
         }
