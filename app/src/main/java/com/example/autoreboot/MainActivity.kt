@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.autoreboot.ui.theme.AutoRebootTheme
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +49,7 @@ fun AutoRebootScreen() {
         while (true) {
             now = System.currentTimeMillis()
             refresh = !refresh
-            delay(1000L)
+            delay(1.seconds)
         }
     }
 
@@ -90,8 +91,8 @@ fun AutoRebootScreen() {
         Text("Last unlock: ${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
         Text("Last lock detected: ${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
         Text("Last timer alarm: ${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
-        Button(onClick = { val enabled = !AutoRebootState.isEnabled(context); AutoRebootState.setEnabled(context, enabled); if (!enabled) { AutoRebootState.clearTimer(); RebootScheduler.cancel(context) }; refresh = !refresh }, Modifier.padding(top = 16.dp)) { Text(if (AutoRebootState.isEnabled(context)) "Disable" else "Enable") }
-        Button(onClick = { AutoRebootState.clearTimer(); RebootScheduler.cancel(context); refresh = !refresh }, Modifier.padding(top = 8.dp)) { Text("Cancel current timer") }
+        Button(onClick = { val enabled = !AutoRebootState.isEnabled(context); AutoRebootState.setEnabled(context, enabled); if (!enabled) { AutoRebootState.clearTimer(context); RebootScheduler.cancel(context) }; refresh = !refresh }, Modifier.padding(top = 16.dp)) { Text(if (AutoRebootState.isEnabled(context)) "Disable" else "Enable") }
+        Button(onClick = { AutoRebootState.clearTimer(context); RebootScheduler.cancel(context); refresh = !refresh }, Modifier.padding(top = 8.dp)) { Text("Cancel current timer") }
     }
 }
 
