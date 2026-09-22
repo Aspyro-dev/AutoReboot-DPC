@@ -11,6 +11,7 @@ object AutoRebootState {
     private const val KEY_TIMER_TOKEN = "timer_token"
     private const val KEY_LAST_REBOOT_ATTEMPT = "last_reboot_attempt"
     private const val KEY_LAST_REBOOT_RESULT = "last_reboot_result"
+    private const val KEY_DIAGNOSTIC_LOG = "diagnostic_log"
     private const val KEY_WAITING_FIRST_UNLOCK = "waiting_first_unlock"
     private const val KEY_LAST_UNLOCK = "last_unlock"
     private const val KEY_LAST_LOCK = "last_lock"
@@ -96,6 +97,17 @@ object AutoRebootState {
     fun recordAlarm(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_ALARM, System.currentTimeMillis()).apply()
     }
+
+    fun recordDiagnostic(context: Context, message: String) {
+        val p = prefs(context)
+        val existing = p.getString(KEY_DIAGNOSTIC_LOG, "") ?: ""
+        val line = System.currentTimeMillis().toString() + " | " + message
+        val lines = (existing.split("\\n").filter { it.isNotBlank() } + line).takeLast(80)
+        p.edit().putString(KEY_DIAGNOSTIC_LOG, lines.joinToString("\\n")).apply()
+    }
+
+    fun diagnosticLog(context: Context): String =
+        prefs(context).getString(KEY_DIAGNOSTIC_LOG, "") ?: ""
 
     fun recordRebootAttempt(context: Context, result: String) {
         prefs(context).edit()
