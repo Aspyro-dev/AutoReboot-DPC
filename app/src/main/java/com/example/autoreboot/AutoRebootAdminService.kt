@@ -15,6 +15,7 @@ class AutoRebootAdminService : DeviceAdminService() {
 
     private val lockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            AutoRebootState.recordDiagnostic(context, "AdminService broadcast: " + (intent.action ?: "null"))
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> handler.postDelayed({ handlePossibleLock() }, 500L)
                 Intent.ACTION_USER_PRESENT -> handleUnlock()
@@ -24,6 +25,7 @@ class AutoRebootAdminService : DeviceAdminService() {
 
     override fun onCreate() {
         super.onCreate()
+        AutoRebootState.recordDiagnostic(this, "AdminService onCreate")
 
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
@@ -34,12 +36,14 @@ class AutoRebootAdminService : DeviceAdminService() {
     }
 
     override fun onDestroy() {
+        AutoRebootState.recordDiagnostic(this, "AdminService onDestroy")
         handler.removeCallbacksAndMessages(null)
         unregisterReceiver(lockReceiver)
         super.onDestroy()
     }
 
     private fun handlePossibleLock() {
+        AutoRebootState.recordDiagnostic(this, "handlePossibleLock")
         val keyguard = getSystemService(KeyguardManager::class.java)
         val deviceLocked = keyguard.isDeviceLocked
 
@@ -56,6 +60,7 @@ class AutoRebootAdminService : DeviceAdminService() {
     }
 
     private fun handleUnlock() {
+        AutoRebootState.recordDiagnostic(this, "handleUnlock")
         AutoRebootState.recordUnlock(this)
 
         if (AutoRebootState.isWaitingForFirstUnlock(this)) {
