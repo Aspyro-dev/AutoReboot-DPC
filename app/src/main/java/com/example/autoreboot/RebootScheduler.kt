@@ -7,26 +7,23 @@ import android.content.Intent
 import android.os.Build
 
 object RebootScheduler {
-    private const val REQUEST_CODE = 7001
+    private const val REQUEST_CODE_BASE = 7001
     private const val ACTION_TIMER_EXPIRED =
         "com.example.autoreboot.ACTION_TIMER_EXPIRED"
     private const val EXTRA_TIMER_END = "timer_end"
 
-    private fun pendingIntent(context: Context, endTime: Long? = null): PendingIntent {
-        val intent = Intent(context, RebootAlarmReceiver::class.java)
-            .setAction(ACTION_TIMER_EXPIRED)
+    private fun requestCode(endTime: Long): Int =
+        REQUEST_CODE_BASE + (endTime and 0x7FFF).toInt()
 
-        if (endTime != null) {
-            intent.putExtra(EXTRA_TIMER_END, endTime)
-        }
-
-        return PendingIntent.getBroadcast(
+    private fun pendingIntent(context: Context, endTime: Long): PendingIntent =
+        PendingIntent.getBroadcast(
             context,
-            REQUEST_CODE,
-            intent,
+            requestCode(endTime),
+            Intent(context, RebootAlarmReceiver::class.java)
+                .setAction(ACTION_TIMER_EXPIRED)
+                .putExtra(EXTRA_TIMER_END, endTime),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-    }
 
     fun schedule(context: Context, endTime: Long) {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
@@ -65,8 +62,16 @@ object RebootScheduler {
     }
 
     fun cancel(context: Context) {
-        val alarmManager = context.getSystemService(AlarmManager::class.java)
-        alarmManager.cancel(pendingIntent(context))
+        val token = AutoRebootState.timerToken(context)
+        if (token != 0L) {
+            context.getSystemService(AlarmManager::class.java)
+                .cancel(pendingIntent(context, token))
+        }
+    }
+
+    fun cancelAll(context: Context) {
+        // The current timer, if any, is the only alarm we own.
+        cancel(context)
     }
 
     fun action(): String = ACTION_TIMER_EXPIRED
