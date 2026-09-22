@@ -47,13 +47,11 @@ fun AutoRebootScreen() {
     val isDeviceOwner = dpm.isDeviceOwnerApp(context.packageName)
     val isLocked = keyguard.isDeviceLocked
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var refresh by remember { mutableStateOf(false) }
     var timerMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         while (true) {
             now = System.currentTimeMillis()
-            refresh = !refresh
             delay(1.seconds)
         }
     }
@@ -127,7 +125,6 @@ fun AutoRebootScreen() {
                         onClick = {
                             AutoRebootState.setDurationMs(context, duration)
                             timerMenuExpanded = false
-                            refresh = !refresh
                         }
                     )
                 }
@@ -160,7 +157,6 @@ fun AutoRebootScreen() {
                     AutoRebootState.clearTimer(context)
                     RebootScheduler.cancel(context)
                 }
-                refresh = !refresh
             },
             Modifier.padding(top = 16.dp)
         ) {
