@@ -11,6 +11,10 @@ object AutoRebootState {
     private const val KEY_LAST_UNLOCK = "last_unlock"
     private const val KEY_LAST_LOCK = "last_lock"
     private const val KEY_LAST_ALARM = "last_alarm"
+    private const val KEY_LAST_SCHEDULED = "last_scheduled"
+    private const val KEY_LAST_SCHEDULED_END = "last_scheduled_end"
+    private const val KEY_LAST_SCHEDULE_MODE = "last_schedule_mode"
+    private const val KEY_LAST_SCHEDULE_ERROR = "last_schedule_error"
 
     private fun prefs(context: Context) =
         context.createDeviceProtectedStorageContext()
@@ -40,6 +44,22 @@ object AutoRebootState {
         prefs(context).edit().putLong(KEY_TIMER_END, endTime).apply()
     }
 
+    fun recordTimerScheduled(context: Context, endTime: Long, mode: String) {
+        prefs(context).edit()
+            .putLong(KEY_LAST_SCHEDULED, System.currentTimeMillis())
+            .putLong(KEY_LAST_SCHEDULED_END, endTime)
+            .putString(KEY_LAST_SCHEDULE_MODE, mode)
+            .remove(KEY_LAST_SCHEDULE_ERROR)
+            .apply()
+    }
+
+    fun recordScheduleError(context: Context, error: String) {
+        prefs(context).edit()
+            .putLong(KEY_LAST_SCHEDULED, System.currentTimeMillis())
+            .putString(KEY_LAST_SCHEDULE_ERROR, error)
+            .apply()
+    }
+
     fun clearTimer(context: Context) {
         prefs(context).edit().remove(KEY_TIMER_END).apply()
     }
@@ -62,4 +82,8 @@ object AutoRebootState {
     fun lastUnlock(context: Context) = prefs(context).getLong(KEY_LAST_UNLOCK, 0L)
     fun lastLock(context: Context) = prefs(context).getLong(KEY_LAST_LOCK, 0L)
     fun lastAlarm(context: Context) = prefs(context).getLong(KEY_LAST_ALARM, 0L)
+    fun lastScheduled(context: Context) = prefs(context).getLong(KEY_LAST_SCHEDULED, 0L)
+    fun lastScheduledEnd(context: Context) = prefs(context).getLong(KEY_LAST_SCHEDULED_END, 0L)
+    fun lastScheduleMode(context: Context) = prefs(context).getString(KEY_LAST_SCHEDULE_MODE, "never") ?: "never"
+    fun lastScheduleError(context: Context) = prefs(context).getString(KEY_LAST_SCHEDULE_ERROR, "") ?: ""
 }
