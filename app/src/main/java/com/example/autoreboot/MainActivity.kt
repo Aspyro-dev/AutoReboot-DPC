@@ -75,35 +75,13 @@ fun AutoRebootScreen() {
         Text("AutoReboot", style = MaterialTheme.typography.headlineMedium)
         Text(if (isDeviceOwner) "Device Owner: YES" else "Device Owner: NO", Modifier.padding(top = 16.dp))
         Text(if (isLocked) "Device state: LOCKED" else "Device state: UNLOCKED", Modifier.padding(top = 8.dp))
-        Text(if (timerActive) "Timer: ${formatDuration(remaining)} remaining" else "Timer: not active", Modifier.padding(top = 8.dp))
-        Text("Enabled: ${AutoRebootState.isEnabled(context)}", Modifier.padding(top = 8.dp))
-        Text("Waiting for first unlock: ${AutoRebootState.isWaitingForFirstUnlock(context)}", Modifier.padding(top = 8.dp))
+        Text(if (timerActive) "Timer: \${formatDuration(remaining)} remaining" else "Timer: not active", Modifier.padding(top = 8.dp))
+        Text("Enabled: \${AutoRebootState.isEnabled(context)}", Modifier.padding(top = 8.dp))
+        Text("Waiting for first unlock: \${AutoRebootState.isWaitingForFirstUnlock(context)}", Modifier.padding(top = 8.dp))
 
-        Text("Last unlock: ${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
-        Text("Last lock detected: ${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
-        Text("Last timer alarm: ${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
-
-        Text("Last SCREEN_OFF: ${formatTimestamp(AutoRebootState.lastScreenOff(context))}", Modifier.padding(top = 8.dp))
-        Text("Last SCREEN_ON: ${formatTimestamp(AutoRebootState.lastScreenOn(context))}", Modifier.padding(top = 8.dp))
-        Text(
-            "SCREEN_ON state: device=${AutoRebootState.lastScreenOnLocked(context)}, keyguard=${AutoRebootState.lastScreenOnKeyguard(context)}, secure=${AutoRebootState.lastScreenOnSecure(context)}, interactive=${AutoRebootState.lastScreenOnInteractive(context)}",
-            Modifier.padding(top = 8.dp)
-        )
-        Text(
-            "Last lock check: ${formatTimestamp(AutoRebootState.lastLockCheck(context))} (${AutoRebootState.lastLockCheckResult(context)})",
-            Modifier.padding(top = 8.dp)
-        )
-        Text("Last Keyguard check: ${AutoRebootState.lastKeyguardCheckResult(context)}", Modifier.padding(top = 8.dp))
-        Text("Last Keyguard secure: ${AutoRebootState.lastKeyguardSecureResult(context)}", Modifier.padding(top = 8.dp))
-        Text("Last interactive: ${AutoRebootState.lastInteractiveResult(context)}", Modifier.padding(top = 8.dp))
-        Text("Last timer scheduled: ${formatTimestamp(AutoRebootState.lastTimerScheduled(context))}", Modifier.padding(top = 8.dp))
-        Text(
-            "Last timer cleared: ${formatTimestamp(AutoRebootState.lastTimerCleared(context))} (${AutoRebootState.lastTimerClearReason(context)})",
-            Modifier.padding(top = 8.dp)
-        )
-        Text("Last USER_PRESENT: ${formatTimestamp(AutoRebootState.lastUserPresent(context))}", Modifier.padding(top = 8.dp))
-        Text("Service created: ${formatTimestamp(AutoRebootState.lastServiceCreate(context))}", Modifier.padding(top = 8.dp))
-        Text("Service destroyed: ${formatTimestamp(AutoRebootState.lastServiceDestroy(context))}", Modifier.padding(top = 8.dp))
+        Text("Last unlock: \${formatTimestamp(AutoRebootState.lastUnlock(context))}", Modifier.padding(top = 8.dp))
+        Text("Last lock detected: \${formatTimestamp(AutoRebootState.lastLock(context))}", Modifier.padding(top = 8.dp))
+        Text("Last timer alarm: \${formatTimestamp(AutoRebootState.lastAlarm(context))}", Modifier.padding(top = 8.dp))
 
         Button(
             onClick = {
@@ -129,19 +107,6 @@ fun AutoRebootScreen() {
             Modifier.padding(top = 8.dp)
         ) {
             Text("Cancel current timer")
-        }
-
-        Button(
-            onClick = {
-                val endTime = System.currentTimeMillis() + 60_000L
-                AutoRebootState.startTimer(context, endTime)
-                AutoRebootState.recordTimerScheduled(context)
-                RebootScheduler.schedule(context, endTime)
-                refresh = !refresh
-            },
-            Modifier.padding(top = 8.dp)
-        ) {
-            Text("Start 1-minute test timer")
         }
     }
 }
