@@ -20,6 +20,8 @@ object RebootScheduler {
 
     fun schedule(context: Context, endTime: Long) {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
+        if (!alarmManager.canScheduleExactAlarms()) return
+
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             endTime,
