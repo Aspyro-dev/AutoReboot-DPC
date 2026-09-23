@@ -47,16 +47,32 @@ class AutoRebootAdminService : DeviceAdminService() {
         val keyguard = getSystemService(KeyguardManager::class.java)
         val deviceLocked = keyguard.isDeviceLocked
 
-        if (!AutoRebootState.isEnabled(this)) return
-        if (!deviceLocked) return
-        if (AutoRebootState.isWaitingForFirstUnlock(this)) return
-        if (AutoRebootState.timerEnd(this) > 0L) return
+        if (!AutoRebootState.isEnabled(this)) {
+            AutoRebootState.recordDiagnostic(this, "handlePossibleLock: skipped disabled");
+            return
+        }
+        if (!deviceLocked) {
+            AutoRebootState.recordDiagnostic(this, "handlePossibleLock: skipped unlocked");
+            return
+        }
+        if (AutoRebootState.isWaitingForFirstUnlock(this)) {
+            AutoRebootState.recordDiagnostic(this, "handlePossibleLock: skipped waiting for first unlock");
+            return
+        }
+        val existingTimerEnd = AutoRebootState.timerEnd(this)
+        AutoRebootState.recordDiagnostic(this, "handlePossibleLock: state enabled=true locked=true waiting=false timerEnd=" + existingTimerEnd)
+        if (existingTimerEnd > 0L) {
+            AutoRebootState.recordDiagnostic(this, "handlePossibleLock: skipped existing timer");
+            return
+        }
 
+        AutoRebootState.recordDiagnostic(this, "handlePossibleLock: starting timer");
         AutoRebootState.recordLock(this)
 
         val endTime = System.currentTimeMillis() + AutoRebootState.durationMs(this)
         AutoRebootState.startTimer(this, endTime)
         RebootScheduler.schedule(this, endTime)
+        AutoRebootState.recordDiagnostic(this, "handlePossibleLock: timer scheduled for " + endTime);
     }
 
     private fun handleUnlock() {
