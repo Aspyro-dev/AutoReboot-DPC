@@ -28,6 +28,12 @@ object RebootScheduler {
     fun schedule(context: Context, endTime: Long) {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val operation = pendingIntent(context, endTime)
+        AutoRebootState.recordDiagnostic(
+            context,
+            "RebootScheduler: schedule requested end=" + endTime +
+                " now=" + System.currentTimeMillis() +
+                " delayMs=" + (endTime - System.currentTimeMillis())
+        )
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
@@ -39,6 +45,7 @@ object RebootScheduler {
                     operation
                 )
                 AutoRebootState.recordTimerScheduled(context, endTime, "inexact")
+                AutoRebootState.recordDiagnostic(context, "RebootScheduler: scheduled mode=inexact end=" + endTime)
                 return
             }
 
@@ -48,15 +55,24 @@ object RebootScheduler {
                 operation
             )
             AutoRebootState.recordTimerScheduled(context, endTime, "exact_allow_while_idle")
+            AutoRebootState.recordDiagnostic(context, "RebootScheduler: scheduled mode=exact_allow_while_idle end=" + endTime)
         } catch (e: SecurityException) {
             AutoRebootState.recordScheduleError(
                 context,
                 "SecurityException: " + (e.message ?: "unknown")
             )
+            AutoRebootState.recordDiagnostic(
+                context,
+                "RebootScheduler: schedule failed SecurityException: " + (e.message ?: "unknown")
+            )
         } catch (e: RuntimeException) {
             AutoRebootState.recordScheduleError(
                 context,
                 e.javaClass.simpleName + ": " + (e.message ?: "unknown")
+            )
+            AutoRebootState.recordDiagnostic(
+                context,
+                "RebootScheduler: schedule failed " + e.javaClass.simpleName + ": " + (e.message ?: "unknown")
             )
         }
     }
