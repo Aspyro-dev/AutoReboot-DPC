@@ -73,6 +73,9 @@ class RebootAlarmReceiver : BroadcastReceiver() {
         }
 
         try {
+            AutoRebootState.recordDiagnostic(context, "AlarmReceiver: invalidating expired timer before reboot")
+            RebootScheduler.cancel(context)
+            AutoRebootState.clearTimer(context)
             AutoRebootState.recordDiagnostic(context, "AlarmReceiver: calling DevicePolicyManager.reboot")
             AutoRebootState.recordRebootAttempt(context, "reboot requested")
             dpm.reboot(ComponentName(context, AutoRebootDeviceAdmin::class.java))
