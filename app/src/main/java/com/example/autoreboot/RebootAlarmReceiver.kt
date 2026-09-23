@@ -13,6 +13,12 @@ class RebootAlarmReceiver : BroadcastReceiver() {
 
         AutoRebootState.recordDiagnostic(context, "AlarmReceiver: received")
         AutoRebootState.recordAlarm(context)
+        AutoRebootState.recordDiagnostic(
+            context,
+            "AlarmReceiver: received at=" + System.currentTimeMillis() +
+                " scheduledEnd=" + intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L) +
+                " latenessMs=" + (System.currentTimeMillis() - intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L))
+        )
 
         AutoRebootState.recordDiagnostic(context, "AlarmReceiver: beginning validation")
 
@@ -78,6 +84,7 @@ class RebootAlarmReceiver : BroadcastReceiver() {
             AutoRebootState.clearTimer(context)
             AutoRebootState.recordDiagnostic(context, "AlarmReceiver: calling DevicePolicyManager.reboot")
             AutoRebootState.recordRebootAttempt(context, "reboot requested")
+            AutoRebootState.recordDiagnostic(context, "AlarmReceiver: reboot request sent at=" + System.currentTimeMillis())
             dpm.reboot(ComponentName(context, AutoRebootDeviceAdmin::class.java))
         } catch (e: SecurityException) {
             AutoRebootState.recordDiagnostic(context, "AlarmReceiver: SecurityException: " + (e.message ?: "unknown"))
