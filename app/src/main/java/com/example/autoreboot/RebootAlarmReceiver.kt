@@ -6,23 +6,31 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
+import android.os.SystemClock
 
 class RebootAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != RebootScheduler.action()) return
 
+        val receiveWall = System.currentTimeMillis()
+        val receiveElapsed = SystemClock.elapsedRealtime()
+        val expectedEnd = intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L)
+        val power = context.getSystemService(PowerManager::class.java)
         AutoRebootState.recordDiagnostic(context, "AlarmReceiver: received")
         AutoRebootState.recordAlarm(context)
         AutoRebootState.recordDiagnostic(
             context,
-            "AlarmReceiver: received at=" + System.currentTimeMillis() +
-                " scheduledEnd=" + intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L) +
-                " latenessMs=" + (System.currentTimeMillis() - intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L))
+            "AlarmReceiver: timing wallNow=" + receiveWall +
+                " elapsedNow=" + receiveElapsed +
+                " scheduledEnd=" + expectedEnd +
+                " latenessMs=" + (receiveWall - expectedEnd) +
+                " interactive=" + power.isInteractive +
+                " idle=" + power.isDeviceIdleMode
         )
 
         AutoRebootState.recordDiagnostic(context, "AlarmReceiver: beginning validation")
 
-        val expectedEnd = intent.getLongExtra(RebootScheduler.timerEndExtra(), 0L)
         val currentEnd = AutoRebootState.timerEnd(context)
         val timerStart = AutoRebootState.timerStart(context)
         val currentToken = AutoRebootState.timerToken(context)
