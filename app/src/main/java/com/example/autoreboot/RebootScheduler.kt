@@ -5,6 +5,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.PowerManager
+import android.os.SystemClock
 
 object RebootScheduler {
     private const val REQUEST_CODE_BASE = 7001
@@ -28,16 +30,24 @@ object RebootScheduler {
     fun schedule(context: Context, endTime: Long) {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val operation = pendingIntent(context, endTime)
+        val nowWall = System.currentTimeMillis()
+        val nowElapsed = SystemClock.elapsedRealtime()
+        val power = context.getSystemService(PowerManager::class.java)
+        val exactAllowed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) alarmManager.canScheduleExactAlarms() else true
         AutoRebootState.recordDiagnostic(
             context,
-            "RebootScheduler: schedule requested end=" + endTime +
-                " now=" + System.currentTimeMillis() +
-                " delayMs=" + (endTime - System.currentTimeMillis())
+            "RebootScheduler: schedule requested wallNow=" + nowWall +
+                " elapsedNow=" + nowElapsed +
+                " end=" + endTime +
+                " delayMs=" + (endTime - nowWall) +
+                " exactAllowed=" + exactAllowed +
+                " interactive=" + power.isInteractive +
+                " idle=" + power.isDeviceIdleMode
         )
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                !alarmManager.canScheduleExactAlarms()
+                !exactAllowed
             ) {
                 alarmManager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
@@ -45,7 +55,7 @@ object RebootScheduler {
                     operation
                 )
                 AutoRebootState.recordTimerScheduled(context, endTime, "inexact")
-                AutoRebootState.recordDiagnostic(context, "RebootScheduler: scheduled mode=inexact end=" + endTime)
+                AutoRebootState.recordDiagnostic(context, "RebootScheduler: scheduled mode=inexact wallNow=" + System.currentTimeMillis() + " elapsedNow=" + SystemClock.elapsedRealtime() + " end=" + endTime)
                 return
             }
 
@@ -55,7 +65,7 @@ object RebootScheduler {
                 operation
             )
             AutoRebootState.recordTimerScheduled(context, endTime, "exact_allow_while_idle")
-            AutoRebootState.recordDiagnostic(context, "RebootScheduler: scheduled mode=exact_allow_while_idle end=" + endTime)
+            AutoRebootState.recordDiagnostic(context, "RebootScheduler: scheduled mode=exact_allow_while_idle wallNow=" + System.currentTimeMillis() + " elapsedNow=" + SystemClock.elapsedRealtime() + " end=" + endTime)
         } catch (e: SecurityException) {
             AutoRebootState.recordScheduleError(
                 context,
